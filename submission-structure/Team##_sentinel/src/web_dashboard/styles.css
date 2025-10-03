@@ -1,0 +1,678 @@
+/* Project Sentinel Dashboard Styles */
+
+:root {
+    --primary-color: #2563eb;
+    --secondary-color: #64748b;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --error-color: #ef4444;
+    --critical-color: #dc2626;
+    --background-color: #f8fafc;
+    --surface-color: #ffffff;
+    --border-color: #e2e8f0;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+    --text-muted: #94a3b8;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --border-radius: 8px;
+    --transition: all 0.2s ease-in-out;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    background-color: var(--background-color);
+    color: var(--text-primary);
+    line-height: 1.6;
+}
+
+.dashboard-container {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Header Styles */
+.dashboard-header {
+    background: var(--surface-color);
+    border-bottom: 1px solid var(--border-color);
+    box-shadow: var(--shadow-sm);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+}
+
+.header-content {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.logo-section {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.logo-icon {
+    width: 2rem;
+    height: 2rem;
+    color: var(--primary-color);
+}
+
+.logo-section h1 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.system-status {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.status-indicator,
+.connection-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    border-radius: var(--border-radius);
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: var(--transition);
+}
+
+.status-indicator.healthy,
+.connection-status.connected {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--success-color);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.status-indicator.error,
+.connection-status.disconnected {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--error-color);
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.status-icon,
+.connection-icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Main Dashboard */
+.dashboard-main {
+    flex: 1;
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+    width: 100%;
+}
+
+/* Metrics Grid */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.metric-card {
+    background: var(--surface-color);
+    border-radius: var(--border-radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    transition: var(--transition);
+}
+
+.metric-card:hover {
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+}
+
+.metric-header {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.metric-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.metric-icon.alert {
+    color: var(--warning-color);
+}
+
+.metric-icon.customers {
+    color: var(--primary-color);
+}
+
+.metric-icon.transactions {
+    color: var(--success-color);
+}
+
+.metric-icon.inventory {
+    color: var(--secondary-color);
+}
+
+.metric-header h3 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.metric-value {
+    font-size: 2.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.metric-change {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+}
+
+/* Content Grid */
+.content-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2rem;
+    grid-template-areas:
+        "alerts stations"
+        "analytics queue"
+        "health health";
+}
+
+.card {
+    background: var(--surface-color);
+    border-radius: var(--border-radius);
+    box-shadow: var(--shadow-sm);
+    border: 1px solid var(--border-color);
+    overflow: hidden;
+}
+
+.card-header {
+    padding: 1.5rem 1.5rem 1rem;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: between;
+    align-items: center;
+}
+
+.card-header h2 {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.section-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--primary-color);
+}
+
+/* Alerts Panel */
+.alerts-panel {
+    grid-area: alerts;
+}
+
+.alert-filters {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.filter-btn {
+    padding: 0.375rem 0.75rem;
+    border: 1px solid var(--border-color);
+    background: var(--surface-color);
+    color: var(--text-secondary);
+    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: var(--transition);
+}
+
+.filter-btn:hover {
+    background: var(--background-color);
+}
+
+.filter-btn.active {
+    background: var(--primary-color);
+    color: white;
+    border-color: var(--primary-color);
+}
+
+.alerts-container {
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.alert-item {
+    border-left: 4px solid transparent;
+    margin-bottom: 1rem;
+    padding: 1rem;
+    border-radius: 0 var(--border-radius) var(--border-radius) 0;
+    background: var(--background-color);
+    transition: var(--transition);
+}
+
+.alert-item:hover {
+    transform: translateX(4px);
+}
+
+.alert-item.critical {
+    border-left-color: var(--critical-color);
+    background: rgba(220, 38, 38, 0.05);
+}
+
+.alert-item.warning {
+    border-left-color: var(--warning-color);
+    background: rgba(245, 158, 11, 0.05);
+}
+
+.alert-item.info {
+    border-left-color: var(--primary-color);
+    background: rgba(37, 99, 235, 0.05);
+}
+
+.alert-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.alert-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+}
+
+.alert-icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+.alert-type {
+    font-weight: 600;
+    color: var(--text-primary);
+    flex: 1;
+}
+
+.alert-time {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.alert-message {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+}
+
+.alert-station {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 500;
+}
+
+/* Station Overview */
+.station-overview {
+    grid-area: stations;
+}
+
+.stations-grid {
+    display: grid;
+    gap: 1rem;
+    padding: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.station-card {
+    padding: 1rem;
+    border-radius: var(--border-radius);
+    border: 2px solid var(--border-color);
+    transition: var(--transition);
+}
+
+.station-card.active {
+    border-color: var(--success-color);
+    background: rgba(16, 185, 129, 0.05);
+}
+
+.station-card.inactive {
+    border-color: var(--text-muted);
+    background: rgba(148, 163, 184, 0.05);
+}
+
+.station-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.station-header h3 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.station-status-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+}
+
+.station-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.75rem;
+}
+
+.station-metric {
+    text-align: center;
+}
+
+.station-metric .metric-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 0.25rem;
+}
+
+.station-metric .metric-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Analytics Panel */
+.analytics-panel {
+    grid-area: analytics;
+}
+
+.analytics-panel .card-header {
+    justify-content: space-between;
+}
+
+.analytics-panel select {
+    padding: 0.375rem 0.75rem;
+    border: 1px solid var(--border-color);
+    border-radius: 0.375rem;
+    background: var(--surface-color);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+}
+
+/* Queue Monitoring */
+.queue-monitoring {
+    grid-area: queue;
+}
+
+.queue-metrics {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.queue-metric {
+    text-align: center;
+}
+
+.queue-metric .metric-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.queue-metric .metric-value {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+/* System Health */
+.system-health {
+    grid-area: health;
+}
+
+.health-indicators {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    padding: 1rem;
+    border-bottom: 1px solid var(--border-color);
+}
+
+.health-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0.75rem;
+    border-radius: var(--border-radius);
+    background: var(--background-color);
+}
+
+.health-label {
+    font-weight: 500;
+    color: var(--text-primary);
+}
+
+.health-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.health-status.healthy {
+    color: var(--success-color);
+}
+
+.health-status.warning {
+    color: var(--warning-color);
+}
+
+.health-status.error {
+    color: var(--error-color);
+}
+
+.health-icon {
+    width: 1rem;
+    height: 1rem;
+}
+
+.performance-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+    padding: 1rem;
+}
+
+.stat-item {
+    text-align: center;
+}
+
+.stat-label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    display: block;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.025em;
+}
+
+.stat-value {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+/* Chart Container */
+.chart-container {
+    padding: 1rem;
+    height: 300px;
+    position: relative;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+    .content-grid {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+            "alerts"
+            "stations"
+            "analytics"
+            "queue"
+            "health";
+    }
+    
+    .dashboard-main {
+        padding: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-content {
+        padding: 1rem;
+        flex-direction: column;
+        gap: 1rem;
+        text-align: center;
+    }
+    
+    .system-status {
+        gap: 1rem;
+    }
+    
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .health-indicators {
+        grid-template-columns: 1fr;
+    }
+    
+    .performance-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .queue-metrics {
+        grid-template-columns: 1fr;
+    }
+    
+    .station-metrics {
+        grid-template-columns: 1fr;
+    }
+    
+    .alert-filters {
+        flex-wrap: wrap;
+    }
+    
+    .card-header {
+        flex-direction: column;
+        gap: 1rem;
+        align-items: flex-start;
+    }
+}
+
+@media (max-width: 480px) {
+    .dashboard-main {
+        padding: 0.5rem;
+    }
+    
+    .metric-card,
+    .card {
+        margin: 0.5rem 0;
+    }
+    
+    .metric-value {
+        font-size: 1.75rem;
+    }
+}
+
+/* Scrollbar Styling */
+.alerts-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.alerts-container::-webkit-scrollbar-track {
+    background: var(--background-color);
+    border-radius: 3px;
+}
+
+.alerts-container::-webkit-scrollbar-thumb {
+    background: var(--border-color);
+    border-radius: 3px;
+}
+
+.alerts-container::-webkit-scrollbar-thumb:hover {
+    background: var(--text-muted);
+}
+
+/* Animation for loading states */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.loading {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Print styles */
+@media print {
+    .dashboard-container {
+        background: white;
+    }
+    
+    .card {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+    
+    .chart-container {
+        height: auto;
+    }
+}

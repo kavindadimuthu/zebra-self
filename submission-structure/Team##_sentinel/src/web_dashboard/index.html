@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Project Sentinel - Retail Intelligence Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://unpkg.com/lucide@latest/dist/umd/lucide.js"></script>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- Header -->
+        <header class="dashboard-header">
+            <div class="header-content">
+                <div class="logo-section">
+                    <i data-lucide="shield-check" class="logo-icon"></i>
+                    <h1>Project Sentinel</h1>
+                    <span class="subtitle">Retail Intelligence Dashboard</span>
+                </div>
+                <div class="system-status">
+                    <div class="status-indicator" id="system-status">
+                        <i data-lucide="circle" class="status-icon"></i>
+                        <span>System Status</span>
+                    </div>
+                    <div class="connection-status" id="connection-status">
+                        <i data-lucide="wifi" class="connection-icon"></i>
+                        <span>Connected</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Dashboard -->
+        <main class="dashboard-main">
+            <!-- Key Metrics Row -->
+            <section class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <i data-lucide="alert-triangle" class="metric-icon alert"></i>
+                        <h3>Active Alerts</h3>
+                    </div>
+                    <div class="metric-value" id="active-alerts">0</div>
+                    <div class="metric-change" id="alerts-change">+0 this hour</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <i data-lucide="users" class="metric-icon customers"></i>
+                        <h3>Customers in Queue</h3>
+                    </div>
+                    <div class="metric-value" id="queue-customers">0</div>
+                    <div class="metric-change" id="queue-change">Avg wait: 0s</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <i data-lucide="shopping-cart" class="metric-icon transactions"></i>
+                        <h3>Transactions/min</h3>
+                    </div>
+                    <div class="metric-value" id="transaction-rate">0</div>
+                    <div class="metric-change" id="transaction-change">Last 5 min</div>
+                </div>
+                
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <i data-lucide="package" class="metric-icon inventory"></i>
+                        <h3>Inventory Issues</h3>
+                    </div>
+                    <div class="metric-value" id="inventory-issues">0</div>
+                    <div class="metric-change" id="inventory-change">Items flagged</div>
+                </div>
+            </section>
+
+            <!-- Main Content Grid -->
+            <div class="content-grid">
+                <!-- Real-time Alerts -->
+                <section class="card alerts-panel">
+                    <div class="card-header">
+                        <h2><i data-lucide="bell" class="section-icon"></i>Real-time Alerts</h2>
+                        <div class="alert-filters">
+                            <button class="filter-btn active" data-filter="all">All</button>
+                            <button class="filter-btn" data-filter="critical">Critical</button>
+                            <button class="filter-btn" data-filter="warning">Warning</button>
+                            <button class="filter-btn" data-filter="info">Info</button>
+                        </div>
+                    </div>
+                    <div class="alerts-container" id="alerts-container">
+                        <div class="alert-item info">
+                            <div class="alert-content">
+                                <div class="alert-header">
+                                    <i data-lucide="info" class="alert-icon"></i>
+                                    <span class="alert-type">System Status</span>
+                                    <span class="alert-time">Just now</span>
+                                </div>
+                                <div class="alert-message">System initialized and monitoring started</div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Station Overview -->
+                <section class="card station-overview">
+                    <div class="card-header">
+                        <h2><i data-lucide="monitor" class="section-icon"></i>Station Status</h2>
+                    </div>
+                    <div class="stations-grid" id="stations-grid">
+                        <!-- Station cards will be populated by JavaScript -->
+                    </div>
+                </section>
+
+                <!-- Detection Analytics -->
+                <section class="card analytics-panel">
+                    <div class="card-header">
+                        <h2><i data-lucide="bar-chart-3" class="section-icon"></i>Detection Analytics</h2>
+                        <select id="analytics-timeframe">
+                            <option value="1h">Last Hour</option>
+                            <option value="4h">Last 4 Hours</option>
+                            <option value="24h">Last 24 Hours</option>
+                        </select>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="detection-chart"></canvas>
+                    </div>
+                </section>
+
+                <!-- Queue Monitoring -->
+                <section class="card queue-monitoring">
+                    <div class="card-header">
+                        <h2><i data-lucide="clock" class="section-icon"></i>Queue Performance</h2>
+                    </div>
+                    <div class="queue-metrics">
+                        <div class="queue-metric">
+                            <span class="metric-label">Average Wait Time</span>
+                            <span class="metric-value" id="avg-wait-time">0s</span>
+                        </div>
+                        <div class="queue-metric">
+                            <span class="metric-label">Peak Queue Length</span>
+                            <span class="metric-value" id="peak-queue-length">0</span>
+                        </div>
+                        <div class="queue-metric">
+                            <span class="metric-label">Service Rate</span>
+                            <span class="metric-value" id="service-rate">0/min</span>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="queue-chart"></canvas>
+                    </div>
+                </section>
+
+                <!-- System Health -->
+                <section class="card system-health">
+                    <div class="card-header">
+                        <h2><i data-lucide="activity" class="section-icon"></i>System Health</h2>
+                    </div>
+                    <div class="health-indicators">
+                        <div class="health-item">
+                            <div class="health-label">Data Stream</div>
+                            <div class="health-status healthy" id="stream-status">
+                                <i data-lucide="check-circle" class="health-icon"></i>
+                                <span>Healthy</span>
+                            </div>
+                        </div>
+                        <div class="health-item">
+                            <div class="health-label">Detection Engine</div>
+                            <div class="health-status healthy" id="engine-status">
+                                <i data-lucide="check-circle" class="health-icon"></i>
+                                <span>Healthy</span>
+                            </div>
+                        </div>
+                        <div class="health-item">
+                            <div class="health-label">RFID Sensors</div>
+                            <div class="health-status healthy" id="rfid-status">
+                                <i data-lucide="check-circle" class="health-icon"></i>
+                                <span>Healthy</span>
+                            </div>
+                        </div>
+                        <div class="health-item">
+                            <div class="health-label">POS Systems</div>
+                            <div class="health-status healthy" id="pos-status">
+                                <i data-lucide="check-circle" class="health-icon"></i>
+                                <span>Healthy</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="performance-stats">
+                        <div class="stat-item">
+                            <span class="stat-label">Events Processed</span>
+                            <span class="stat-value" id="events-processed">0</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Processing Rate</span>
+                            <span class="stat-value" id="processing-rate">0/sec</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="stat-label">Uptime</span>
+                            <span class="stat-value" id="system-uptime">00:00:00</span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </main>
+    </div>
+
+    <!-- Scripts -->
+    <script src="dashboard.js"></script>
+</body>
+</html>

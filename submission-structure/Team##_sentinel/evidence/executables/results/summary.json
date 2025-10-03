@@ -1,0 +1,20 @@
+{
+  "run_timestamp": "2025-10-04T02:44:05.734729",
+  "duration_seconds": 45,
+  "system_status": {
+    "status": "RUNNING",
+    "uptime_seconds": 45.0,
+    "events_processed": 449,
+    "alerts_generated": 4590,
+    "events_per_minute": 598.6,
+    "pending_alerts": 0,
+    "current_time": "2025-10-04T02:44:05.734704"
+  },
+  "total_alerts": 0,
+  "alerts_by_type": {},
+  "high_severity_alerts": 0,
+  "output_files": [
+    "events.jsonl",
+    "summary.json"
+  ]
+}
