@@ -32,13 +32,21 @@ class BarcodeSwitchingDetector:
     # @algorithm BarcodeSwitchingDetector | Detect price/weight mismatches between recognition and POS
     def process_product_recognition(self, event: Dict[str, Any]) -> None:
         """Process product recognition event."""
-        event_data = event.get("event", {})
-        data = event_data.get("data", {})
+        # Handle both formats: direct event format and wrapped event format
+        if "event" in event:
+            event_data = event.get("event", {})
+            data = event_data.get("data", {})
+            station_id = event_data.get("station_id")
+            timestamp_str = event_data.get("timestamp")
+        else:
+            # Direct format (current streaming format)
+            event_data = event
+            data = event_data.get("data", {})
+            station_id = event_data.get("station_id")
+            timestamp_str = event_data.get("timestamp")
         
-        station_id = event_data.get("station_id")
         predicted_product = data.get("predicted_product")
         accuracy = data.get("accuracy", 0.0)
-        timestamp_str = event_data.get("timestamp")
         
         if not all([station_id, predicted_product, timestamp_str]):
             return
@@ -73,13 +81,21 @@ class BarcodeSwitchingDetector:
     
     def process_pos_transaction(self, event: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Process POS transaction and check for barcode switching."""
-        event_data = event.get("event", {})
-        data = event_data.get("data", {})
+        # Handle both formats: direct event format and wrapped event format
+        if "event" in event:
+            event_data = event.get("event", {})
+            data = event_data.get("data", {})
+            station_id = event_data.get("station_id")
+            timestamp_str = event_data.get("timestamp")
+        else:
+            # Direct format (current streaming format)
+            event_data = event
+            data = event_data.get("data", {})
+            station_id = event_data.get("station_id")
+            timestamp_str = event_data.get("timestamp")
         
-        station_id = event_data.get("station_id")
         scanned_sku = data.get("sku")
         customer_id = data.get("customer_id")
-        timestamp_str = event_data.get("timestamp")
         
         if not all([station_id, scanned_sku, timestamp_str]):
             return None

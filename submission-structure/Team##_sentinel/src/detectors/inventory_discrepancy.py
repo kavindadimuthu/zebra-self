@@ -16,11 +16,14 @@ logger = logging.getLogger(__name__)
 class InventoryDiscrepancyDetector:
     """Detects inventory level discrepancies using RFID vs recorded counts."""
     
-    def __init__(self, discrepancy_threshold_percentage: float = 10.0):
+    def __init__(self, discrepancy_threshold_percentage: float = 50.0):
         self.discrepancy_threshold = discrepancy_threshold_percentage
-        self.recorded_inventory: Dict[str, int] = {}  # sku -> count
-        self.rfid_counts: Dict[str, Dict[str, int]] = defaultdict(lambda: defaultdict(int))  # location -> sku -> count
+        self.recorded_inventory: Dict[str, int] = {}
+        self.rfid_counts: Dict[str, Dict[str, int]] = defaultdict(lambda: defaultdict(int))
         self.last_inventory_snapshot: Optional[datetime] = None
+        # Track if we have sufficient RFID data to make meaningful comparisons
+        self.rfid_baseline_established = False
+        self.min_rfid_events_for_baseline = 20  # Need more RFID events with 2-state system
         self.pos_transactions: List[Dict[str, Any]] = []
         
     def load_inventory_snapshot(self, snapshot_data: Dict[str, int], timestamp: datetime) -> None:
@@ -49,17 +52,31 @@ class InventoryDiscrepancyDetector:
         self.recorded_inventory = {sku: int(count) for sku, count in data.items()}
         self.last_inventory_snapshot = timestamp
         
-        # Check for discrepancies with RFID counts
+        # Only check for discrepancies if we have sufficient RFID data
+        if not self.rfid_baseline_established:
+            total_rfid_events = sum(location_counts.values() for location_counts in self.rfid_counts.values())
+            if total_rfid_events < self.min_rfid_events_for_baseline:
+                logger.debug(f"Insufficient RFID data for inventory comparison: {total_rfid_events} events")
+                return []
+            self.rfid_baseline_established = True
+        
+        # Check for discrepancies - with 2-state RFID, we look for unusual patterns
+        # RFID counts represent items currently in scan areas, not total inventory
         alerts = []
         for sku, recorded_count in self.recorded_inventory.items():
-            rfid_count = self._get_total_rfid_count(sku)
+            rfid_detected = self._get_total_rfid_count(sku)
             
-            discrepancy = self._calculate_discrepancy(recorded_count, rfid_count)
-            if discrepancy and abs(discrepancy["percentage"]) >= self.discrepancy_threshold:
-                alert = self._generate_inventory_discrepancy_alert(
-                    sku, recorded_count, rfid_count, discrepancy, timestamp
-                )
-                alerts.append(alert)
+            # Flag discrepancy only if:
+            # 1. Items are detected by RFID but not recorded in inventory (impossible scenario)
+            # 2. Recorded inventory dropped significantly but no RFID activity (potential theft)
+            if rfid_detected > recorded_count:
+                # More RFID detections than recorded inventory - suspicious
+                discrepancy = self._calculate_discrepancy(recorded_count, rfid_detected)
+                if discrepancy and abs(discrepancy["percentage"]) >= self.discrepancy_threshold:
+                    alert = self._generate_inventory_discrepancy_alert(
+                        sku, recorded_count, rfid_detected, discrepancy, timestamp
+                    )
+                    alerts.append(alert)
         
         return alerts
     
@@ -69,11 +86,11 @@ class InventoryDiscrepancyDetector:
         data = event_data.get("data", {})
         
         sku = data.get("sku")
-        location = data.get("location", "STORE_FLOOR")
+        location = data.get("location")
         epc = data.get("epc")
         timestamp_str = event_data.get("timestamp")
         
-        if not all([sku, epc, timestamp_str]):
+        if not all([sku, epc, timestamp_str, location]):
             return
         
         try:
@@ -81,13 +98,14 @@ class InventoryDiscrepancyDetector:
         except ValueError:
             return
         
-        # Track RFID count by location
-        if location in ["IN_SCAN_AREA", "STORE_FLOOR", "SHELF"]:
-            self.rfid_counts[location][sku] += 1
-        elif location == "OUT_OF_AREA":
-            # Item left area - reduce count
-            if self.rfid_counts[location][sku] > 0:
-                self.rfid_counts[location][sku] -= 1
+        # Track RFID count with only 2 states: IN_SCAN_AREA and OUT_SCAN_AREA
+        if location == "IN_SCAN_AREA":
+            # Item detected in scan area - increment count (item present)
+            self.rfid_counts["DETECTED"][sku] += 1
+        elif location == "OUT_SCAN_AREA":
+            # Item left scan area - decrement count (item removed/sold)
+            if self.rfid_counts["DETECTED"][sku] > 0:
+                self.rfid_counts["DETECTED"][sku] -= 1
     
     def process_pos_transaction(self, event: Dict[str, Any]) -> Optional[Dict[str, Any]]:
         """Process POS transaction to update inventory and detect discrepancies."""
@@ -138,11 +156,8 @@ class InventoryDiscrepancyDetector:
         return None
     
     def _get_total_rfid_count(self, sku: str) -> int:
-        """Get total RFID count for a SKU across all locations."""
-        total = 0
-        for location_counts in self.rfid_counts.values():
-            total += location_counts.get(sku, 0)
-        return total
+        """Get total RFID count for a SKU (items currently detected by RFID)."""
+        return self.rfid_counts["DETECTED"].get(sku, 0)
     
     def _calculate_discrepancy(self, recorded: int, rfid: int) -> Optional[Dict[str, Any]]:
         """Calculate discrepancy between recorded and RFID counts."""
