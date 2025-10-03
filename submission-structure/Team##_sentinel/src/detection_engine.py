@@ -8,9 +8,11 @@ import logging
 import json
 import threading
 import time
+import os
 from datetime import datetime, timedelta
 from typing import Dict, List, Any, Optional
 from queue import Queue
+from pathlib import Path
 
 from data_ingestion import StreamingDataClient, DataBuffer, load_product_catalog, load_customer_data
 from event_correlation import EventCorrelator
@@ -31,6 +33,12 @@ class DetectionEngine:
         self.config = config or {}
         self.running = False
         
+        # Events output file path
+        self.events_output_file = self.config.get(
+            'events_output_file', 
+            '../evidence/output/events/events.json'
+        )
+        
         # Initialize components
         self.data_client = StreamingDataClient()
         self.data_buffer = DataBuffer()
@@ -47,6 +55,7 @@ class DetectionEngine:
         # Event queues
         self.alert_queue = Queue()
         self.processed_events = []
+        self.saved_events = []  # Track events saved to file
         
         # Data catalogs
         self.product_catalog = {}
@@ -285,10 +294,47 @@ class DetectionEngine:
             logger.error(f"Error processing inventory event: {e}")
     
     def _add_alert(self, alert: Dict[str, Any]) -> None:
-        """Add an alert to the queue."""
+        """Add an alert to the queue and save to JSON file."""
         self.alert_queue.put(alert)
         self.stats["alerts_generated"] += 1
+        self.saved_events.append(alert)
+        
+        # Save to JSON file immediately
+        self._save_events_to_file()
+        
         logger.info(f"Generated alert: {alert['event_data']['event_name']} at {alert.get('event_data', {}).get('station_id', 'UNKNOWN')}")
+    
+    def _save_events_to_file(self) -> None:
+        """Save all events to the JSON output file."""
+        try:
+            # Create directory if it doesn't exist
+            output_path = Path(self.events_output_file)
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            # Save events as JSON array
+            with open(self.events_output_file, 'w') as f:
+                json.dump(self.saved_events, f, indent=2, default=str)
+                
+        except Exception as e:
+            logger.error(f"Failed to save events to {self.events_output_file}: {e}")
+    
+    def save_events_jsonl(self, output_file: str = None) -> None:
+        """Save events in JSONL format (one JSON object per line)."""
+        if output_file is None:
+            output_file = self.events_output_file.replace('.json', '.jsonl')
+        
+        try:
+            output_path = Path(output_file)
+            output_path.parent.mkdir(parents=True, exist_ok=True)
+            
+            with open(output_file, 'w') as f:
+                for event in self.saved_events:
+                    f.write(json.dumps(event, default=str) + '\n')
+                    
+            logger.info(f"Saved {len(self.saved_events)} events to {output_file}")
+            
+        except Exception as e:
+            logger.error(f"Failed to save events to {output_file}: {e}")
     
     def get_alerts(self, max_alerts: int = 10) -> List[Dict[str, Any]]:
         """Get recent alerts from the queue."""

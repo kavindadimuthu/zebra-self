@@ -103,7 +103,13 @@ class ProjectSentinelRunner:
         print("Initializing detection engine...")
         
         try:
-            self.detection_engine = DetectionEngine()
+            # Configure events output path
+            events_output_path = self.base_dir / "evidence" / "output" / "events" / "events.json"
+            config = {
+                'events_output_file': str(events_output_path)
+            }
+            
+            self.detection_engine = DetectionEngine(config)
             
             # Initialize with data files
             input_dir = self.data_dir / "input"
@@ -113,6 +119,7 @@ class ProjectSentinelRunner:
             
             self.detection_engine.initialize(str(input_dir))
             print("✓ Detection engine initialized")
+            print(f"✓ Events will be saved to: {events_output_path}")
             return True
             
         except Exception as e:
@@ -201,10 +208,15 @@ class ProjectSentinelRunner:
                 events_file = self.output_dir / "events.jsonl"
                 events_file.write_text("")
             else:
-                # Export events as JSONL
+                # Export events as JSONL to results directory
                 events_file = self.output_dir / "events.jsonl"
                 self.detection_engine.export_events_jsonl(str(events_file))
                 print(f"✓ Generated {len(alerts)} events in {events_file}")
+                
+                # Also save to evidence/output/events directory (JSONL format)
+                evidence_events_file = self.base_dir / "evidence" / "output" / "events" / "events.jsonl"
+                self.detection_engine.save_events_jsonl(str(evidence_events_file))
+                print(f"✓ Saved events to evidence output: {evidence_events_file}")
             
             # Generate summary report
             self._generate_summary_report(alerts)

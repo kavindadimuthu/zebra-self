@@ -1,18 +1,20 @@
 {
-  "run_timestamp": "2025-10-04T02:44:05.734729",
-  "duration_seconds": 45,
+  "run_timestamp": "2025-10-04T03:29:21.372955",
+  "duration_seconds": 30,
   "system_status": {
     "status": "RUNNING",
-    "uptime_seconds": 45.0,
-    "events_processed": 449,
-    "alerts_generated": 4590,
-    "events_per_minute": 598.6,
+    "uptime_seconds": 30.0,
+    "events_processed": 10,
+    "alerts_generated": 23,
+    "events_per_minute": 20.0,
     "pending_alerts": 0,
-    "current_time": "2025-10-04T02:44:05.734704"
+    "current_time": "2025-10-04T03:29:21.372898"
   },
-  "total_alerts": 0,
-  "alerts_by_type": {},
-  "high_severity_alerts": 0,
+  "total_alerts": 23,
+  "alerts_by_type": {
+    "Inventory Discrepancy": 23
+  },
+  "high_severity_alerts": 23,
   "output_files": [
     "events.jsonl",
     "summary.json"
