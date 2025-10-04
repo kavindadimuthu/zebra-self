@@ -5,12 +5,17 @@ This script sets up dependencies, starts the streaming server,
 runs the detection system, and produces events.jsonl output.
 
 Usage:
-    python3 run_demo.py [--mode MODE] [--duration SECONDS] [--data-dir PATH] [--output-dir PATH]
+    python3 run_demo.py [--mode MODE] [--duration SECONDS] [--data-dir PATH] [--output-subdir SUBDIR]
     
 Modes:
     both         - Run both detection engine and web dashboard (default)
     web-only     - Run only the web dashboard in standalone mode
     detection-only - Run only the detection engine (no dashboard)
+    
+Output Subdirectories:
+    events       - Output to evidence/output/events/ (default)
+    final        - Output to evidence/output/final/
+    test         - Output to evidence/output/test/
 """
 
 import os
@@ -51,7 +56,10 @@ class ProjectSentinelRunner:
         self.base_dir = Path(__file__).parent.parent.parent
         # Data directory is 5 levels up from executables, we're already in zebra-self
         self.data_dir = Path(args.data_dir) if args.data_dir else Path(__file__).parent.parent.parent.parent.parent / "data"
-        self.output_dir = Path(args.output_dir) if args.output_dir else Path("./results")
+        
+        # Centralized output directory - evidence/output/{subdir}/
+        self.output_subdir = args.output_subdir if hasattr(args, 'output_subdir') else 'events'
+        self.output_dir = self.base_dir / "evidence" / "output" / self.output_subdir
         
         # Ensure output directory exists
         self.output_dir.mkdir(parents=True, exist_ok=True)
@@ -108,8 +116,8 @@ class ProjectSentinelRunner:
         print("Initializing detection engine...")
         
         try:
-            # Configure events output path
-            events_output_path = self.base_dir / "evidence" / "output" / "events" / "events.json"
+            # Configure events output path - centralized to evidence/output/{subdir}/
+            events_output_path = self.output_dir / "events.json"
             config = {
                 'events_output_file': str(events_output_path)
             }
@@ -124,7 +132,7 @@ class ProjectSentinelRunner:
             
             self.detection_engine.initialize(str(input_dir))
             print("✓ Detection engine initialized")
-            print(f"✓ Events will be saved to: {events_output_path}")
+            print(f"✓ Events will be saved to: {self.output_dir}/")
             return True
             
         except Exception as e:
@@ -275,16 +283,12 @@ class ProjectSentinelRunner:
                 # Create empty events file
                 events_file = self.output_dir / "events.jsonl"
                 events_file.write_text("")
+                print(f"✓ Created empty events file: {events_file}")
             else:
-                # Export events as JSONL to results directory
+                # Save events to centralized evidence/output/{subdir}/ location
                 events_file = self.output_dir / "events.jsonl"
-                self.detection_engine.export_events_jsonl(str(events_file))
-                print(f"✓ Generated {len(alerts)} events in {events_file}")
-                
-                # Also save to evidence/output/events directory (JSONL format)
-                evidence_events_file = self.base_dir / "evidence" / "output" / "events" / "events.jsonl"
-                self.detection_engine.save_events_jsonl(str(evidence_events_file))
-                print(f"✓ Saved events to evidence output: {evidence_events_file}")
+                self.detection_engine.save_events_jsonl(str(events_file))
+                print(f"✓ Saved {len(alerts)} events to: {events_file}")
             
             # Generate summary report
             self._generate_summary_report(alerts)
@@ -442,11 +446,12 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python3 run_demo.py                           # Run both systems (default)
+  python3 run_demo.py                           # Run both systems with web dashboard (default)
   python3 run_demo.py --mode web-only           # Run standalone web dashboard
   python3 run_demo.py --mode detection-only     # Run detection engine only
   python3 run_demo.py --duration 60             # Run for 60 seconds
-  python3 run_demo.py --dashboard web           # Use web dashboard
+  python3 run_demo.py --output-subdir final     # Output to evidence/output/final/
+  python3 run_demo.py --output-subdir test      # Output to evidence/output/test/
   python3 run_demo.py --dashboard none          # Disable dashboard
         """
     )
@@ -471,16 +476,17 @@ Examples:
     )
     
     parser.add_argument(
-        "--output-dir",
-        default="./results",
-        help="Output directory for results (default: ./results)"
+        "--output-subdir",
+        choices=["events", "final", "test"],
+        default="events",
+        help="Output subdirectory within evidence/output/ (default: events)"
     )
     
     parser.add_argument(
         "--dashboard",
         choices=["console", "web", "none"],
-        default="console",
-        help="Dashboard type (default: console)"
+        default="web",
+        help="Dashboard type (default: web)"
     )
     
     args = parser.parse_args()
