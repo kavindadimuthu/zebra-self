@@ -22,6 +22,7 @@ from detectors.queue_monitor import QueueMonitor
 from detectors.barcode_switching import BarcodeSwitchingDetector
 from detectors.inventory_discrepancy import InventoryDiscrepancyDetector
 from detectors.system_crash import SystemCrashDetector
+from detectors.success_operation import SuccessOperationDetector
 
 logger = logging.getLogger(__name__)
 
@@ -51,6 +52,7 @@ class DetectionEngine:
         self.barcode_detector = BarcodeSwitchingDetector()
         self.inventory_detector = InventoryDiscrepancyDetector()
         self.crash_detector = SystemCrashDetector()
+        self.success_detector = SuccessOperationDetector()
         
         # Event queues
         self.alert_queue = Queue()
@@ -228,6 +230,11 @@ class DetectionEngine:
             inventory_alert = self.inventory_detector.process_pos_transaction(event)
             if inventory_alert:
                 self._add_alert(inventory_alert)
+                
+            # Success operation detection (generate success events for normal transactions)
+            success_alert = self.success_detector.process_pos_transaction(event)
+            if success_alert:
+                self._add_alert(success_alert)
             
             # System crash detection
             crash_alert = self.crash_detector.process_station_event(event)
