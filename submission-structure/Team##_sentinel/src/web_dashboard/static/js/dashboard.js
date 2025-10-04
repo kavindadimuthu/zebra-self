@@ -1,16 +1,23 @@
 class ProjectSentinelDashboard {
     constructor() {
-        this.apiBaseUrl = '/api';
-        this.refreshInterval = 2000; // 2 seconds
+        this.refreshInterval = 5000; // 5 seconds
+        this.connected = false;
         this.charts = {};
-        this.isConnected = false;
         this.startTime = Date.now();
         
-        // Initialize dashboard
-        this.initializeCharts();
-        this.startDataRefresh();
-        this.setupEventListeners();
+        this.init();
+    }
+
+    async init() {
         this.initializeLucideIcons();
+        this.setupEventListeners();
+        this.initializeCharts();
+        
+        // Initial data load
+        await this.fetchDashboardData();
+        
+        // Start real-time updates
+        this.startDataRefresh();
     }
 
     initializeLucideIcons() {
@@ -38,11 +45,19 @@ class ProjectSentinelDashboard {
 
     async fetchDashboardData() {
         try {
-            const response = await fetch(`${this.apiBaseUrl}/dashboard-data`);
-            if (!response.ok) throw new Error('Failed to fetch data');
+            const response = await fetch('/api/dashboard-data');
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
             
             const data = await response.json();
+            
             this.updateConnectionStatus(true);
+            this.updateMetrics(data.metrics);
+            this.updateAlerts(data.alerts);
+            this.updateStations(data.stations);
+            this.updateCharts(data.chart_data);
+            
             return data;
         } catch (error) {
             console.error('Error fetching dashboard data:', error);

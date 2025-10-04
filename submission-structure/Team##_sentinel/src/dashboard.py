@@ -20,11 +20,17 @@ except ImportError:
     HAS_CURSES = False
 
 try:
-    from web_server import DashboardWebServer
-    HAS_WEB_SERVER = True
+    from web_dashboard import WebDashboard as ModularWebDashboard, DashboardManager
+    HAS_NEW_WEB_DASHBOARD = True
 except ImportError:
-    HAS_WEB_SERVER = False
-    DashboardWebServer = None
+    try:
+        from web_server import DashboardWebServer
+        HAS_WEB_SERVER = True
+        HAS_NEW_WEB_DASHBOARD = False
+    except ImportError:
+        HAS_WEB_SERVER = False
+        HAS_NEW_WEB_DASHBOARD = False
+        DashboardWebServer = None
 
 
 class ConsoleDashboard:
@@ -274,18 +280,30 @@ class WebDashboard:
         self.port = port
         self.server = None
         
-        if not HAS_WEB_SERVER:
-            raise ImportError("Web server module not available. Please ensure web_server.py is present.")
+        # Use the new modular web dashboard if available
+        if HAS_NEW_WEB_DASHBOARD:
+            self._use_new_dashboard = True
+            self._dashboard = ModularWebDashboard(detection_engine, host, port)
+        elif HAS_WEB_SERVER:
+            self._use_new_dashboard = False
+            self._dashboard = None
+        else:
+            raise ImportError("Web dashboard modules not available. Please ensure web_dashboard package or web_server.py is present.")
     
     def start(self) -> None:
         """Start the web dashboard server."""
         try:
-            self.server = DashboardWebServer(self.engine, self.host, self.port)
-            self.server.start()
-            print(f"\nWeb Dashboard started!")
-            print(f"Open your browser and go to: {self.server.get_url()}")
-            print("The dashboard will show real-time alerts, station status, and analytics.")
-            print("Press Ctrl+C to stop the dashboard.\n")
+            if self._use_new_dashboard:
+                # Use new modular dashboard
+                self._dashboard.start()
+            else:
+                # Use legacy dashboard
+                self.server = DashboardWebServer(self.engine, self.host, self.port)
+                self.server.start()
+                print(f"\nWeb Dashboard started!")
+                print(f"Open your browser and go to: {self.server.get_url()}")
+                print("The dashboard will show real-time alerts, station status, and analytics.")
+                print("Press Ctrl+C to stop the dashboard.\n")
             
         except Exception as e:
             print(f"Failed to start web dashboard: {e}")
@@ -293,13 +311,20 @@ class WebDashboard:
     
     def stop(self) -> None:
         """Stop the web dashboard server."""
-        if self.server:
-            self.server.stop()
+        try:
+            if self._use_new_dashboard and self._dashboard:
+                self._dashboard.stop()
+            elif self.server:
+                self.server.stop()
             print("Web dashboard stopped.")
+        except Exception as e:
+            print(f"Error stopping web dashboard: {e}")
     
     def get_url(self) -> str:
         """Get the dashboard URL."""
-        if self.server:
+        if self._use_new_dashboard and self._dashboard:
+            return self._dashboard.get_url()
+        elif self.server:
             return self.server.get_url()
         return f"http://{self.host}:{self.port}"
 if __name__ == "__main__":
