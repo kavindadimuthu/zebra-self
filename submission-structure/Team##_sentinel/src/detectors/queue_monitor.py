@@ -257,6 +257,44 @@ class QueueMonitor:
         
         return status
     
+    def get_analytics(self, hours: int = 1) -> Dict[str, Any]:
+        """Get aggregated analytics for all stations."""
+        all_customers = 0
+        all_wait_times = []
+        max_queue_length = 0
+        total_observations = 0
+        station_count = len(self.queue_history)
+        
+        # Aggregate data from all stations
+        for station_id in self.queue_history.keys():
+            station_analytics = self.get_queue_analytics(station_id, hours)
+            if "error" not in station_analytics:
+                total_observations += station_analytics.get('total_observations', 0)
+                max_queue_length = max(max_queue_length, station_analytics.get('max_customer_count', 0))
+                
+                # Collect wait times if available
+                avg_dwell = station_analytics.get('avg_dwell_time_seconds', 0)
+                if avg_dwell > 0:
+                    all_wait_times.append(avg_dwell)
+        
+        # Get current status for active customer count
+        current_status = self.get_current_queue_status()
+        for station_status in current_status.values():
+            all_customers += station_status.get('customer_count', 0)
+        
+        # Calculate service rate (customers per hour) - rough estimate
+        avg_wait_time = sum(all_wait_times) / len(all_wait_times) if all_wait_times else 60
+        service_rate = 3600 / avg_wait_time if avg_wait_time > 0 else 0  # customers per hour
+        
+        return {
+            'total_customers': all_customers,
+            'avg_wait_time': round(avg_wait_time, 1),
+            'peak_queue_length': max_queue_length,
+            'service_rate': round(service_rate, 2),
+            'active_stations': station_count,
+            'total_observations': total_observations
+        }
+    
     def cleanup_old_data(self, hours_to_keep: int = 4) -> None:
         """Clean up old queue data and customer sessions."""
         cutoff_time = datetime.now() - timedelta(hours=hours_to_keep)
