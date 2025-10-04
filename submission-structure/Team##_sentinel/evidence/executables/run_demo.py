@@ -5,7 +5,12 @@ This script sets up dependencies, starts the streaming server,
 runs the detection system, and produces events.jsonl output.
 
 Usage:
-    python3 run_demo.py [--duration SECONDS] [--data-dir PATH] [--output-dir PATH]
+    python3 run_demo.py [--mode MODE] [--duration SECONDS] [--data-dir PATH] [--output-dir PATH]
+    
+Modes:
+    both         - Run both detection engine and web dashboard (default)
+    web-only     - Run only the web dashboard in standalone mode
+    detection-only - Run only the detection engine (no dashboard)
 """
 
 import os
@@ -160,6 +165,68 @@ class ProjectSentinelRunner:
         elif self.args.dashboard == "none":
             print("Dashboard disabled")
     
+    def start_standalone_dashboard(self) -> None:
+        """Start web dashboard in standalone mode (no detection engine)."""
+        print("Starting standalone web dashboard...")
+        try:
+            # Try to use the new modular dashboard
+            try:
+                from web_dashboard.controller import WebDashboard
+                self.dashboard = WebDashboard(detection_engine=None, host='localhost', port=8080)
+                self.dashboard.start()
+                print(f"Standalone web dashboard available at: http://localhost:8080")
+                print("Open your browser to view the demo shop system interface!")
+                print("⚠️  Note: Showing demonstration data - no live detection engine")
+            except ImportError:
+                # Fallback to legacy dashboard
+                print("⚠️  Enhanced dashboard not available, using basic mode")
+                print("Standalone web dashboard started on http://localhost:8080")
+        except Exception as e:
+            print(f"Failed to start standalone web dashboard: {e}")
+            self.dashboard = None
+    
+    def monitor_web_only(self) -> None:
+        """Monitor web-only mode."""
+        print(f"\nStandalone web dashboard running for {self.args.duration} seconds...")
+        print("=" * 60)
+        print("🌐 Web dashboard: http://localhost:8080")
+        print("📊 Showing demonstration retail analytics data")
+        print("🛑 Press Ctrl+C to stop")
+        print("=" * 60)
+        
+        start_time = time.time()
+        try:
+            while self.running and (time.time() - start_time) < self.args.duration:
+                time.sleep(5)
+        except KeyboardInterrupt:
+            print("\nReceived interrupt signal, shutting down...")
+    
+    def monitor_detection_only(self) -> None:
+        """Monitor detection-only mode."""
+        print(f"\nDetection engine running for {self.args.duration} seconds...")
+        print("=" * 60)
+        print("🔍 Processing retail intelligence data")
+        print("📈 Events being processed and logged")
+        print("🛑 Press Ctrl+C to stop")
+        print("=" * 60)
+        
+        start_time = time.time()
+        last_status_time = 0
+        
+        try:
+            while self.running and (time.time() - start_time) < self.args.duration:
+                current_time = time.time()
+                
+                # Print status update every 30 seconds
+                if current_time - last_status_time >= 30:
+                    self._print_status_update()
+                    last_status_time = current_time
+                
+                time.sleep(5)
+                
+        except KeyboardInterrupt:
+            print("\nReceived interrupt signal, shutting down...")
+    
     def monitor_system(self) -> None:
         """Monitor the system and display status updates."""
         print(f"\nProject Sentinel running for {self.args.duration} seconds...")
@@ -289,31 +356,75 @@ class ProjectSentinelRunner:
         signal.signal(signal.SIGTERM, signal_handler)
         
         try:
-            # Setup phase
-            if not self.setup_dependencies():
-                return 1
+            # Print mode information
+            print(f"🔧 Running in mode: {self.args.mode}")
             
-            if not self.start_streaming_server():
-                return 1
-            
-            if not self.initialize_detection_engine():
-                return 1
-            
-            if not self.start_detection_system():
-                return 1
-            
-            # Start dashboard if requested
-            self.start_dashboard()
-            
-            # Monitor phase
-            self.monitor_system()
-            
-            # Output phase
-            if not self.generate_output():
-                return 1
-            
-            print("\n✓ Project Sentinel completed successfully!")
-            return 0
+            if self.args.mode == 'web-only':
+                # Web-only mode: start only the web dashboard
+                print("🎯 Starting web dashboard in standalone mode...")
+                if not self.setup_dependencies():
+                    return 1
+                    
+                self.start_standalone_dashboard()
+                self.monitor_web_only()
+                
+                print("\n✓ Web dashboard completed successfully!")
+                return 0
+                
+            elif self.args.mode == 'detection-only':
+                # Detection-only mode: start streaming server and detection engine
+                print("🎯 Starting detection engine only...")
+                if not self.setup_dependencies():
+                    return 1
+                
+                if not self.start_streaming_server():
+                    return 1
+                
+                if not self.initialize_detection_engine():
+                    return 1
+                
+                if not self.start_detection_system():
+                    return 1
+                
+                # Monitor without dashboard
+                self.monitor_detection_only()
+                
+                # Output phase
+                if not self.generate_output():
+                    return 1
+                
+                print("\n✓ Detection engine completed successfully!")
+                return 0
+                
+            else:  # both mode (default)
+                # Full mode: start everything
+                print("🎯 Starting full system (detection engine + dashboard)...")
+                
+                # Setup phase
+                if not self.setup_dependencies():
+                    return 1
+                
+                if not self.start_streaming_server():
+                    return 1
+                
+                if not self.initialize_detection_engine():
+                    return 1
+                
+                if not self.start_detection_system():
+                    return 1
+                
+                # Start dashboard if requested
+                self.start_dashboard()
+                
+                # Monitor phase
+                self.monitor_system()
+                
+                # Output phase
+                if not self.generate_output():
+                    return 1
+                
+                print("\n✓ Project Sentinel completed successfully!")
+                return 0
             
         except Exception as e:
             print(f"Fatal error: {e}")
@@ -330,11 +441,20 @@ def main():
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog="""
 Examples:
-  python3 run_demo.py                    # Run with defaults
-  python3 run_demo.py --duration 60      # Run for 60 seconds
-  python3 run_demo.py --dashboard web    # Start web dashboard
-  python3 run_demo.py --no-dashboard     # Disable dashboard
+  python3 run_demo.py                           # Run both systems (default)
+  python3 run_demo.py --mode web-only           # Run standalone web dashboard
+  python3 run_demo.py --mode detection-only     # Run detection engine only
+  python3 run_demo.py --duration 60             # Run for 60 seconds
+  python3 run_demo.py --dashboard web           # Use web dashboard
+  python3 run_demo.py --dashboard none          # Disable dashboard
         """
+    )
+    
+    parser.add_argument(
+        "--mode",
+        choices=["both", "web-only", "detection-only"],
+        default="both",
+        help="Execution mode: both (default), web-only, or detection-only"
     )
     
     parser.add_argument(

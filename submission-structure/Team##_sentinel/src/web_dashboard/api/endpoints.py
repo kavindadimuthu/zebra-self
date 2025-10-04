@@ -16,12 +16,16 @@ logger = logging.getLogger(__name__)
 class DashboardAPI:
     """RESTful API for dashboard data access."""
     
-    def __init__(self, detection_engine):
+    def __init__(self, detection_engine=None):
         self.detection_engine = detection_engine
+        self.standalone_mode = detection_engine is None
     
     def get_dashboard_data(self) -> Dict[str, Any]:
         """Get comprehensive dashboard data."""
         try:
+            if self.standalone_mode:
+                return self._get_fallback_data()
+            
             return {
                 'metrics': self.get_metrics_data(),
                 'alerts': self.get_recent_alerts(limit=20),
@@ -36,7 +40,7 @@ class DashboardAPI:
     
     def get_metrics_data(self) -> Dict[str, Any]:
         """Get current metrics for the dashboard."""
-        if not hasattr(self.detection_engine, 'get_system_status'):
+        if self.standalone_mode or not hasattr(self.detection_engine, 'get_system_status'):
             return self._get_demo_metrics()
         
         try:
@@ -81,7 +85,7 @@ class DashboardAPI:
     
     def get_recent_alerts(self, limit: int = 20, severity: Optional[str] = None) -> List[Dict[str, Any]]:
         """Get recent alerts with optional severity filtering."""
-        if not hasattr(self.detection_engine, 'get_all_alerts'):
+        if self.standalone_mode or not hasattr(self.detection_engine, 'get_all_alerts'):
             return self._get_demo_alerts()
         
         try:
@@ -112,6 +116,9 @@ class DashboardAPI:
     
     def get_stations_data(self) -> Dict[str, Any]:
         """Get station status and queue information."""
+        if self.standalone_mode:
+            return self._get_demo_stations()
+            
         try:
             stations = {}
             
@@ -152,6 +159,9 @@ class DashboardAPI:
     
     def get_queue_data(self) -> Dict[str, Any]:
         """Get queue performance metrics."""
+        if self.standalone_mode:
+            return self._get_demo_queue_data()
+            
         try:
             if hasattr(self.detection_engine, 'queue_monitor'):
                 queue_analytics = self.detection_engine.queue_monitor.get_analytics()
@@ -169,6 +179,9 @@ class DashboardAPI:
     
     def get_system_data(self) -> Dict[str, Any]:
         """Get system health and performance data."""
+        if self.standalone_mode:
+            return self._get_demo_system_data()
+            
         try:
             if hasattr(self.detection_engine, 'get_system_status'):
                 status = self.detection_engine.get_system_status()
@@ -237,13 +250,16 @@ class DashboardAPI:
     
     def _get_demo_metrics(self) -> Dict[str, Any]:
         """Get demo metrics for testing."""
+        import random
+        base_time = datetime.now()
+        
         return {
-            'active_alerts': 3,
-            'queue_customers': 7,
-            'transaction_rate': 15,
-            'inventory_issues': 2,
-            'alerts_change': 5,
-            'avg_wait_time': 45
+            'active_alerts': random.randint(1, 5),
+            'queue_customers': random.randint(3, 12),
+            'transaction_rate': random.randint(10, 25),
+            'inventory_issues': random.randint(0, 3),
+            'alerts_change': random.randint(1, 8),
+            'avg_wait_time': random.randint(20, 80)
         }
     
     def _get_demo_alerts(self) -> List[Dict[str, Any]]:

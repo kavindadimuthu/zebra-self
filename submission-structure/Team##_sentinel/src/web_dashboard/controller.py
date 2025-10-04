@@ -41,11 +41,12 @@ class ConsoleDashboard:
 class WebDashboard:
     """Enhanced web-based dashboard with improved architecture."""
     
-    def __init__(self, detection_engine, host: str = 'localhost', port: int = 8080):
+    def __init__(self, detection_engine=None, host: str = 'localhost', port: int = 8080):
         self.engine = detection_engine
         self.host = host
         self.port = port
         self.server: Optional[DashboardWebServer] = None
+        self.standalone_mode = detection_engine is None
     
     def start(self) -> None:
         """Start the web dashboard server."""
@@ -53,11 +54,18 @@ class WebDashboard:
             self.server = DashboardWebServer(self.engine, self.host, self.port)
             self.server.start()
             
-            print(f"\n🚀 Project Sentinel Web Dashboard Started!")
+            mode_text = " (Standalone Mode)" if self.standalone_mode else " (Connected to Detection Engine)"
+            print(f"\n🚀 Project Sentinel Web Dashboard Started{mode_text}!")
             print(f"📊 Dashboard URL: {self.server.get_url()}")
             print(f"🔗 Open your browser to view real-time analytics and alerts")
-            print(f"🎯 Features: Real-time monitoring, alerts, station status, queue analytics")
-            print(f"⚡ Auto-refresh every 5 seconds")
+            
+            if self.standalone_mode:
+                print(f"🎯 Features: Demo mode with simulated data for shop system monitoring")
+                print(f"⚠️  Detection engine not connected - showing demonstration data")
+            else:
+                print(f"🎯 Features: Real-time monitoring, alerts, station status, queue analytics")
+                print(f"⚡ Auto-refresh every 5 seconds")
+            
             print(f"🛑 Press Ctrl+C to stop the dashboard\n")
             
         except Exception as e:
