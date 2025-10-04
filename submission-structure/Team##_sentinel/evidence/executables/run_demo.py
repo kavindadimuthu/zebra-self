@@ -167,30 +167,31 @@ class ProjectSentinelRunner:
     
     def start_standalone_dashboard(self) -> None:
         """Start web dashboard in standalone mode (no detection engine)."""
-        print("Starting standalone web dashboard...")
+        print("Starting server monitoring dashboard...")
         try:
             # Try to use the new modular dashboard
             try:
                 from web_dashboard.controller import WebDashboard
                 self.dashboard = WebDashboard(detection_engine=None, host='localhost', port=8080)
                 self.dashboard.start()
-                print(f"Standalone web dashboard available at: http://localhost:8080")
-                print("Open your browser to view the demo shop system interface!")
-                print("⚠️  Note: Showing demonstration data - no live detection engine")
+                print(f"Server monitoring dashboard available at: http://localhost:8080")
+                print("Open your browser to view server status and diagnostics!")
+                print("⚠️  Note: Detection server offline - showing connection status")
             except ImportError:
                 # Fallback to legacy dashboard
                 print("⚠️  Enhanced dashboard not available, using basic mode")
-                print("Standalone web dashboard started on http://localhost:8080")
+                print("Server monitoring dashboard started on http://localhost:8080")
         except Exception as e:
-            print(f"Failed to start standalone web dashboard: {e}")
+            print(f"Failed to start server monitoring dashboard: {e}")
             self.dashboard = None
     
     def monitor_web_only(self) -> None:
         """Monitor web-only mode."""
-        print(f"\nStandalone web dashboard running for {self.args.duration} seconds...")
+        print(f"\nServer monitoring dashboard running for {self.args.duration} seconds...")
         print("=" * 60)
         print("🌐 Web dashboard: http://localhost:8080")
-        print("📊 Showing demonstration retail analytics data")
+        print("⚠️  Detection server status: OFFLINE")
+        print("📊 Showing server connectivity and status diagnostics")
         print("🛑 Press Ctrl+C to stop")
         print("=" * 60)
         
@@ -361,14 +362,14 @@ class ProjectSentinelRunner:
             
             if self.args.mode == 'web-only':
                 # Web-only mode: start only the web dashboard
-                print("🎯 Starting web dashboard in standalone mode...")
+                print("🎯 Starting web dashboard in server monitoring mode...")
                 if not self.setup_dependencies():
                     return 1
                     
                 self.start_standalone_dashboard()
                 self.monitor_web_only()
                 
-                print("\n✓ Web dashboard completed successfully!")
+                print("\n✓ Server monitoring dashboard completed successfully!")
                 return 0
                 
             elif self.args.mode == 'detection-only':

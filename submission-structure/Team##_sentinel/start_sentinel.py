@@ -112,17 +112,19 @@ def start_web_dashboard(engine=None, port=8080):
                 dashboard.start()
                 
                 print("\n" + "="*60)
-                print("🎉 PROJECT SENTINEL - WEB DASHBOARD (STANDALONE)")
+                print("🛑 PROJECT SENTINEL - SERVER MONITORING DASHBOARD")
                 print("="*60)
                 print(f"📊 Dashboard URL: http://localhost:{port}")
                 print("🔗 Open your browser to view the dashboard")
-                print("\n✨ FEATURES (Demo Mode):")
-                print("  • Shop system monitoring interface")
-                print("  • Simulated retail analytics data")  
-                print("  • Station status demonstrations")
-                print("  • Sample alerts and notifications")
-                print("  • Modern responsive UI")
-                print("\n⚠️  Running in demonstration mode - no live detection engine")
+                print("\n⚠️  DETECTION SERVER STATUS:")
+                print("  • Detection Engine: OFFLINE")
+                print("  • Data Streams: DISCONNECTED") 
+                print("  • Real-time Monitoring: UNAVAILABLE")
+                print("  • Connection Status: NOT CONNECTED")
+                print("\n🔧 TROUBLESHOOTING:")
+                print("  • Start detection engine with --mode both or --mode detection-only")
+                print("  • Check network connectivity to detection server")
+                print("  • Verify detection engine is running on expected port")
                 print("🛑 Press Ctrl+C to stop")
                 print("="*60)
                 
@@ -204,15 +206,15 @@ def main():
     try:
         if args.mode == 'web-only':
             # Start only the web dashboard in standalone mode
-            print("🎯 Starting web dashboard in standalone mode...")
+            print("🎯 Starting web dashboard in server monitoring mode...")
             web_dashboard = start_web_dashboard(engine=None, port=args.port)
             if not web_dashboard:
                 print("❌ Failed to start web dashboard. Exiting.")
                 return
                 
-            print(f"\n🎯 Web dashboard running in standalone mode!")
+            print(f"\n🎯 Web dashboard running in server monitoring mode!")
             print(f"🔗 Access dashboard at: http://localhost:{args.port}")
-            print("📊 Showing demonstration data - no live detection engine")
+            print("⚠️  Detection server offline - showing connection status and diagnostics")
             
         elif args.mode == 'detection-only':
             # Start only the detection engine

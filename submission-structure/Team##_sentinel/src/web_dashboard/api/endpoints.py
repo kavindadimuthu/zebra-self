@@ -245,105 +245,102 @@ class DashboardAPI:
             'stations': self._get_demo_stations(),
             'queue': self._get_demo_queue_data(),
             'system': self._get_demo_system_data(),
-            'chart_data': {}
+            'chart_data': {},
+            'connection_status': 'disconnected',
+            'server_message': 'Project Sentinel detection server is offline'
         }
     
     def _get_demo_metrics(self) -> Dict[str, Any]:
-        """Get demo metrics for testing."""
-        import random
-        base_time = datetime.now()
-        
+        """Get metrics indicating server unavailability."""
         return {
-            'active_alerts': random.randint(1, 5),
-            'queue_customers': random.randint(3, 12),
-            'transaction_rate': random.randint(10, 25),
-            'inventory_issues': random.randint(0, 3),
-            'alerts_change': random.randint(1, 8),
-            'avg_wait_time': random.randint(20, 80)
+            'active_alerts': 0,
+            'queue_customers': 0,
+            'transaction_rate': 0,
+            'inventory_issues': 0,
+            'alerts_change': 0,
+            'avg_wait_time': 0,
+            'server_status': 'disconnected',
+            'last_update': None
         }
     
     def _get_demo_alerts(self) -> List[Dict[str, Any]]:
-        """Get demo alerts for testing."""
+        """Get alerts indicating server unavailability."""
         return [
             {
                 'timestamp': datetime.now().isoformat(),
                 'event_data': {
-                    'event_name': 'Scan Avoidance',
-                    'station_id': 'SCC1',
-                    'product_sku': 'PRD_F_01'
-                },
-                'severity': 'warning'
-            },
-            {
-                'timestamp': (datetime.now() - timedelta(minutes=2)).isoformat(),
-                'event_data': {
-                    'event_name': 'Weight Discrepancy',
-                    'station_id': 'SCC2',
-                    'product_sku': 'PRD_B_01',
-                    'expected_weight': 150,
-                    'actual_weight': 200
+                    'event_name': 'Detection Engine Offline',
+                    'message': 'Project Sentinel detection server is not connected',
+                    'status': 'disconnected'
                 },
                 'severity': 'critical'
             },
             {
-                'timestamp': (datetime.now() - timedelta(minutes=5)).isoformat(),
+                'timestamp': (datetime.now() - timedelta(minutes=1)).isoformat(),
                 'event_data': {
-                    'event_name': 'Long Queue',
-                    'station_id': 'SCC1',
-                    'customer_count': 8
+                    'event_name': 'Data Stream Unavailable',
+                    'message': 'Real-time monitoring data is not available',
+                    'status': 'disconnected'
                 },
                 'severity': 'warning'
             }
         ]
     
     def _get_demo_stations(self) -> Dict[str, Any]:
-        """Get demo station data."""
+        """Get station data indicating server unavailability."""
         return {
             'stations': {
                 'SCC1': {
-                    'status': 'active',
-                    'queue_length': 3,
-                    'avg_wait_time': 45,
-                    'alerts': 2,
-                    'last_transaction': '2 minutes ago'
-                },
-                'SCC2': {
-                    'status': 'active',
-                    'queue_length': 1,
-                    'avg_wait_time': 23,
-                    'alerts': 1,
-                    'last_transaction': '30 seconds ago'
-                },
-                'SCC3': {
-                    'status': 'maintenance',
+                    'status': 'offline',
                     'queue_length': 0,
                     'avg_wait_time': 0,
                     'alerts': 0,
-                    'last_transaction': '15 minutes ago'
+                    'last_transaction': 'Data unavailable - server disconnected',
+                    'connection_status': 'disconnected'
+                },
+                'SCC2': {
+                    'status': 'offline',
+                    'queue_length': 0,
+                    'avg_wait_time': 0,
+                    'alerts': 0,
+                    'last_transaction': 'Data unavailable - server disconnected',
+                    'connection_status': 'disconnected'
+                },
+                'SCC3': {
+                    'status': 'offline',
+                    'queue_length': 0,
+                    'avg_wait_time': 0,
+                    'alerts': 0,
+                    'last_transaction': 'Data unavailable - server disconnected',
+                    'connection_status': 'disconnected'
                 }
             }
         }
     
     def _get_demo_queue_data(self) -> Dict[str, Any]:
-        """Get demo queue data."""
+        """Get queue data indicating server unavailability."""
         return {
-            'total_customers': 12,
-            'avg_wait_time': 34,
-            'peak_queue_length': 8,
-            'service_rate': 2.3
+            'total_customers': 0,
+            'avg_wait_time': 0,
+            'peak_queue_length': 0,
+            'service_rate': 0,
+            'status': 'disconnected',
+            'message': 'Queue monitoring unavailable - detection server offline'
         }
     
     def _get_demo_system_data(self) -> Dict[str, Any]:
-        """Get demo system data."""
+        """Get system data indicating server unavailability."""
         return {
-            'events_processed': 1247,
-            'processing_rate': 8.5,
-            'uptime': 3600,
+            'events_processed': 0,
+            'processing_rate': 0,
+            'uptime': 0,
+            'connection_status': 'disconnected',
+            'last_connected': None,
             'health': {
-                'stream': 'healthy',
-                'engine': 'healthy',
-                'rfid': 'healthy',
-                'pos': 'healthy'
+                'stream': 'disconnected',
+                'engine': 'offline',
+                'rfid': 'unavailable',
+                'pos': 'unavailable'
             }
         }
     

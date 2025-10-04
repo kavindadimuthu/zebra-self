@@ -52,7 +52,10 @@ class ProjectSentinelDashboard {
             
             const data = await response.json();
             
-            this.updateConnectionStatus(true);
+            // Check if we're in standalone/disconnected mode
+            const isStandalone = data.connection_status === 'disconnected' || data.server_message;
+            
+            this.updateConnectionStatus(!isStandalone);
             this.updateMetrics(data.metrics);
             this.updateAlerts(data.alerts);
             this.updateStations(data.stations);
@@ -78,9 +81,9 @@ class ProjectSentinelDashboard {
             systemStatusElement.innerHTML = '<i data-lucide="check-circle" class="status-icon"></i><span>System Healthy</span>';
         } else {
             statusElement.className = 'connection-status disconnected';
-            statusElement.innerHTML = '<i data-lucide="wifi-off" class="connection-icon"></i><span>Disconnected</span>';
+            statusElement.innerHTML = '<i data-lucide="wifi-off" class="connection-icon"></i><span>Server Offline</span>';
             systemStatusElement.className = 'status-indicator error';
-            systemStatusElement.innerHTML = '<i data-lucide="alert-circle" class="status-icon"></i><span>Connection Lost</span>';
+            systemStatusElement.innerHTML = '<i data-lucide="server-off" class="status-icon"></i><span>Detection Server Unavailable</span>';
         }
         
         // Refresh icons

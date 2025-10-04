@@ -54,14 +54,16 @@ class WebDashboard:
             self.server = DashboardWebServer(self.engine, self.host, self.port)
             self.server.start()
             
-            mode_text = " (Standalone Mode)" if self.standalone_mode else " (Connected to Detection Engine)"
+            mode_text = " (Standalone Mode - Server Offline)" if self.standalone_mode else " (Connected to Detection Engine)"
             print(f"\n🚀 Project Sentinel Web Dashboard Started{mode_text}!")
             print(f"📊 Dashboard URL: {self.server.get_url()}")
-            print(f"🔗 Open your browser to view real-time analytics and alerts")
+            print(f"🔗 Open your browser to view the dashboard")
             
             if self.standalone_mode:
-                print(f"🎯 Features: Demo mode with simulated data for shop system monitoring")
-                print(f"⚠️  Detection engine not connected - showing demonstration data")
+                print(f"⚠️  WARNING: Detection engine is not connected")
+                print(f"📡 Status: Server offline - showing disconnection indicators")
+                print(f"🔧 Features: System status monitoring and connection diagnostics")
+                print(f"💡 To connect: Start the detection engine in 'both' or 'detection-only' mode")
             else:
                 print(f"🎯 Features: Real-time monitoring, alerts, station status, queue analytics")
                 print(f"⚡ Auto-refresh every 5 seconds")
