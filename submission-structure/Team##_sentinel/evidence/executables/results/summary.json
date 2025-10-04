@@ -1,5 +1,5 @@
 {
-  "run_timestamp": "2025-10-04T09:39:17.479440",
+  "run_timestamp": "2025-10-04T10:24:31.816217",
   "duration_seconds": 60,
   "system_status": {
     "status": "RUNNING",
@@ -8,7 +8,7 @@
     "alerts_generated": 13,
     "events_per_minute": 22.0,
     "pending_alerts": 0,
-    "current_time": "2025-10-04T09:39:17.479351"
+    "current_time": "2025-10-04T10:24:31.816169"
   },
   "total_alerts": 3,
   "alerts_by_type": {
