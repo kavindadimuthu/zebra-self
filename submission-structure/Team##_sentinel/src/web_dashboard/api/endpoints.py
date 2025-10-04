@@ -358,6 +358,144 @@ class DashboardAPI:
             })
         return trends[::-1]
     
+    def get_all_events(self, limit: int = 100, station_id: Optional[str] = None, 
+                      event_type: Optional[str] = None) -> List[Dict[str, Any]]:
+        """Get all events/alerts from all checkout counters with filtering options."""
+        try:
+            # Get all alerts/events from the detection engine
+            if hasattr(self.detection_engine, 'get_all_alerts'):
+                all_events = self.detection_engine.get_all_alerts()
+            else:
+                all_events = self._get_demo_events()
+            
+            # Filter by station if specified
+            if station_id:
+                all_events = [e for e in all_events if e.get('station_id') == station_id or 
+                             e.get('event_data', {}).get('station_id') == station_id]
+            
+            # Filter by event type if specified
+            if event_type:
+                all_events = [e for e in all_events if e.get('event_name') == event_type or
+                             e.get('event_data', {}).get('event_name') == event_type]
+            
+            # Sort by timestamp (most recent first)
+            sorted_events = sorted(all_events, 
+                                 key=lambda x: x.get('timestamp', ''), 
+                                 reverse=True)
+            
+            # Format events for web display
+            formatted_events = []
+            for event in sorted_events[:limit]:
+                formatted_event = self._format_event_for_display(event)
+                formatted_events.append(formatted_event)
+            
+            return formatted_events
+            
+        except Exception as e:
+            logger.error(f"Error getting events: {e}")
+            return self._get_demo_events()
+    
+    def _format_event_for_display(self, event: Dict[str, Any]) -> Dict[str, Any]:
+        """Format event data for web display."""
+        event_data = event.get('event_data', {})
+        
+        return {
+            'id': event.get('event_id', 'N/A'),
+            'timestamp': event.get('timestamp', ''),
+            'event_name': event_data.get('event_name', event.get('event_name', 'Unknown Event')),
+            'station_id': event_data.get('station_id', event.get('station_id', 'N/A')),
+            'customer_id': event_data.get('customer_id', 'N/A'),
+            'product_sku': event_data.get('product_sku', event_data.get('SKU', 'N/A')),
+            'severity': event.get('severity', self._determine_event_severity(event_data)),
+            'details': self._get_event_details(event_data),
+            'raw_data': event_data
+        }
+    
+    def _determine_event_severity(self, event_data: Dict[str, Any]) -> str:
+        """Determine event severity based on event type."""
+        event_name = event_data.get('event_name', '').lower()
+        
+        if any(keyword in event_name for keyword in ['crash', 'error', 'failure', 'discrepancy']):
+            return 'critical'
+        elif any(keyword in event_name for keyword in ['warning', 'switching', 'avoidance', 'weight']):
+            return 'warning'
+        elif 'success' in event_name:
+            return 'success'
+        else:
+            return 'info'
+    
+    def _get_event_details(self, event_data: Dict[str, Any]) -> str:
+        """Generate a human-readable description of the event."""
+        event_name = event_data.get('event_name', 'Unknown Event')
+        
+        if event_name == 'Success Operation':
+            return f"Successful checkout completed"
+        elif event_name == 'Inventory Discrepancy':
+            expected = event_data.get('Expected_Inventory', 'N/A')
+            actual = event_data.get('Actual_Inventory', 'N/A')
+            return f"Inventory mismatch: Expected {expected}, Found {actual}"
+        elif event_name == 'Weight Discrepancies':
+            expected = event_data.get('expected_weight', 'N/A')
+            actual = event_data.get('actual_weight', 'N/A')
+            return f"Weight mismatch: Expected {expected}g, Actual {actual}g"
+        elif event_name == 'Barcode Switching':
+            actual_sku = event_data.get('actual_sku', 'N/A')
+            scanned_sku = event_data.get('scanned_sku', 'N/A')
+            return f"Barcode switching detected: Scanned {scanned_sku}, Actual {actual_sku}"
+        elif event_name == 'Scanner Avoidance':
+            return "Item detected in scan area but not scanned"
+        elif event_name == 'Long Queue Length':
+            customer_count = event_data.get('num_of_customers', event_data.get('customer_count', 'N/A'))
+            return f"Long queue detected: {customer_count} customers waiting"
+        elif event_name == 'Long Wait Time':
+            wait_time = event_data.get('wait_time_seconds', 'N/A')
+            return f"Long wait time: {wait_time} seconds"
+        elif event_name == 'Unexpected Systems Crash':
+            duration = event_data.get('duration_seconds', 'N/A')
+            return f"System crash detected, duration: {duration} seconds"
+        else:
+            return event_name
+    
+    def _get_demo_events(self) -> List[Dict[str, Any]]:
+        """Generate demo events for testing."""
+        demo_events = [
+            {
+                'event_id': 'DEMO_001',
+                'timestamp': (datetime.now() - timedelta(minutes=5)).isoformat(),
+                'event_data': {
+                    'event_name': 'Success Operation',
+                    'station_id': 'SCC1',
+                    'customer_id': 'C001',
+                    'product_sku': 'PRD_F_01'
+                }
+            },
+            {
+                'event_id': 'DEMO_002',
+                'timestamp': (datetime.now() - timedelta(minutes=10)).isoformat(),
+                'event_data': {
+                    'event_name': 'Inventory Discrepancy',
+                    'SKU': 'PRD_F_03',
+                    'Expected_Inventory': 100,
+                    'Actual_Inventory': 95,
+                    'difference': -5,
+                    'severity': 'WARNING'
+                }
+            },
+            {
+                'event_id': 'DEMO_003',
+                'timestamp': (datetime.now() - timedelta(minutes=15)).isoformat(),
+                'event_data': {
+                    'event_name': 'Weight Discrepancies',
+                    'station_id': 'SCC2',
+                    'customer_id': 'C003',
+                    'product_sku': 'PRD_F_05',
+                    'expected_weight': 50,
+                    'actual_weight': 75
+                }
+            }
+        ]
+        return demo_events
+
     def _get_transaction_volume(self) -> List[Dict[str, Any]]:
         """Get transaction volume data for charts."""
         # Generate demo transaction data

@@ -54,6 +54,13 @@ class DashboardRequestHandler(BaseHTTPRequestHandler):
                 severity = query_params.get('severity', [None])[0]
                 alerts = self.api.get_recent_alerts(limit=limit, severity=severity)
                 self._serve_json({'alerts': alerts})
+            elif path == '/api/events':
+                query_params = parse_qs(parsed_path.query)
+                limit = int(query_params.get('limit', [100])[0])
+                station_id = query_params.get('station_id', [None])[0]
+                event_type = query_params.get('event_type', [None])[0]
+                events = self.api.get_all_events(limit=limit, station_id=station_id, event_type=event_type)
+                self._serve_json({'events': events})
             elif path == '/api/stations':
                 self._serve_json(self.api.get_stations_data())
             elif path == '/api/system-status':
@@ -64,6 +71,8 @@ class DashboardRequestHandler(BaseHTTPRequestHandler):
                 self._serve_json(self.api.get_queue_data())
             elif path == '/api/charts':
                 self._serve_json(self.api.get_chart_data())
+            elif path == '/events' or path == '/events.html':
+                self._serve_static_file('templates/events.html')
             elif path.startswith('/api/'):
                 self._send_error(404, "API endpoint not found")
             else:
