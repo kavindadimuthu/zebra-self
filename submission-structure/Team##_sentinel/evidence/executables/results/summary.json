@@ -1,19 +1,19 @@
 {
-  "run_timestamp": "2025-10-04T06:56:07.518387",
-  "duration_seconds": 50,
+  "run_timestamp": "2025-10-04T07:14:21.270065",
+  "duration_seconds": 60,
   "system_status": {
     "status": "RUNNING",
-    "uptime_seconds": 50.0,
-    "events_processed": 17,
-    "alerts_generated": 6,
-    "events_per_minute": 20.4,
+    "uptime_seconds": 60.0,
+    "events_processed": 22,
+    "alerts_generated": 13,
+    "events_per_minute": 22.0,
     "pending_alerts": 0,
-    "current_time": "2025-10-04T06:56:07.518317"
+    "current_time": "2025-10-04T07:14:21.270011"
   },
-  "total_alerts": 6,
+  "total_alerts": 3,
   "alerts_by_type": {
-    "Inventory Discrepancy": 3,
-    "Success Operation": 3
+    "Scanner Avoidance": 1,
+    "Unexpected Systems Crash": 2
   },
   "high_severity_alerts": 3,
   "output_files": [

@@ -1,1 +1,0 @@
-# Project Sentinel Detection System
