@@ -1,25 +1,24 @@
 {
-  "run_timestamp": "2025-10-04T11:25:52.411427",
+  "run_timestamp": "2025-10-04T11:34:26.406770",
   "duration_seconds": 60,
   "system_status": {
     "status": "RUNNING",
     "uptime_seconds": 60.0,
-    "events_processed": 22,
-    "alerts_generated": 13,
-    "events_per_minute": 22.0,
-    "pending_alerts": 13,
-    "current_time": "2025-10-04T11:25:52.411374"
+    "events_processed": 890,
+    "alerts_generated": 28,
+    "events_per_minute": 889.9,
+    "pending_alerts": 28,
+    "current_time": "2025-10-04T11:34:26.406741"
   },
-  "total_alerts": 13,
+  "total_alerts": 28,
   "alerts_by_type": {
-    "Inventory Discrepancy": 4,
-    "Success Operation": 4,
-    "Weight Discrepancies": 1,
-    "Long Queue Length": 1,
+    "Staffing Needs": 2,
+    "Long Queue Length": 13,
+    "Checkout Station Action": 7,
     "Scanner Avoidance": 1,
-    "Unexpected Systems Crash": 2
+    "Unexpected Systems Crash": 5
   },
-  "high_severity_alerts": 7,
+  "high_severity_alerts": 6,
   "output_files": [
     "events.jsonl",
     "summary.json"
