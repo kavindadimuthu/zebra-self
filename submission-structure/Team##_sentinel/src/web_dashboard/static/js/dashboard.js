@@ -120,15 +120,41 @@ class ProjectSentinelDashboard {
 
         const container = document.getElementById('alerts-container');
         
-        // Clear existing alerts except the welcome message
+        // Keep track of existing alert IDs to avoid duplicates
+        const existingAlertIds = new Set();
         const existingAlerts = container.querySelectorAll('.alert-item:not(.welcome)');
-        existingAlerts.forEach(alert => alert.remove());
-
-        // Add new alerts
-        alerts.slice(0, 10).forEach(alert => {
-            const alertElement = this.createAlertElement(alert);
-            container.appendChild(alertElement);
+        existingAlerts.forEach(alert => {
+            const alertId = alert.dataset.alertId;
+            if (alertId) {
+                existingAlertIds.add(alertId);
+            }
         });
+
+        // Add only new alerts (avoiding duplicates)
+        alerts.forEach(alert => {
+            const alertId = alert.event_id || alert.id;
+            if (alertId && !existingAlertIds.has(alertId)) {
+                const alertElement = this.createAlertElement(alert);
+                alertElement.dataset.alertId = alertId;
+                
+                // Insert new alerts at the top (after welcome message if it exists)
+                const welcomeMsg = container.querySelector('.alert-item.welcome');
+                if (welcomeMsg) {
+                    welcomeMsg.insertAdjacentElement('afterend', alertElement);
+                } else {
+                    container.insertBefore(alertElement, container.firstChild);
+                }
+                existingAlertIds.add(alertId);
+            }
+        });
+
+        // Limit total alerts shown (keep most recent 50)
+        const allAlerts = container.querySelectorAll('.alert-item:not(.welcome)');
+        if (allAlerts.length > 50) {
+            for (let i = 50; i < allAlerts.length; i++) {
+                allAlerts[i].remove();
+            }
+        }
     }
 
     createAlertElement(alert) {

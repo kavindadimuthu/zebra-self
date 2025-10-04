@@ -265,7 +265,10 @@
         <!-- Page Header -->
         <div class="page-header">
             <h1>Events Log</h1>
-            <p class="subtitle">Monitor all activities across checkout counters in real-time</p>
+            <p class="subtitle">
+                Monitor all activities across checkout counters in real-time
+                <span class="events-count" style="margin-left: 1rem; font-weight: 600; color: #dbeafe;">Loading events...</span>
+            </p>
         </div>
         
         <!-- Filters Section -->
@@ -440,7 +443,14 @@
                 return;
             }
             
-            tbody.innerHTML = events.map(event => `
+            // Sort events by timestamp (most recent first) to ensure proper display order
+            const sortedEvents = events.sort((a, b) => {
+                const dateA = new Date(a.timestamp);
+                const dateB = new Date(b.timestamp);
+                return dateB - dateA;
+            });
+            
+            tbody.innerHTML = sortedEvents.map(event => `
                 <tr class="event-row" onclick="showEventDetails('${event.id}')">
                     <td class="event-timestamp">${formatTimestamp(event.timestamp)}</td>
                     <td class="event-name">${event.event_name}</td>
@@ -451,6 +461,18 @@
                     <td class="event-details">${event.details}</td>
                 </tr>
             `).join('');
+            
+            // Update events count display
+            updateEventsCount(sortedEvents.length);
+            lucide.createIcons();
+        }
+        
+        function updateEventsCount(count) {
+            // Update the events count in the header if element exists
+            const countElement = document.querySelector('.events-count');
+            if (countElement) {
+                countElement.textContent = `Showing ${count} events`;
+            }
         }
         
         function formatTimestamp(timestamp) {

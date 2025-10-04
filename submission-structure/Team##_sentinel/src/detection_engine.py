@@ -344,20 +344,14 @@ class DetectionEngine:
             logger.error(f"Failed to save events to {output_file}: {e}")
     
     def get_alerts(self, max_alerts: int = 10) -> List[Dict[str, Any]]:
-        """Get recent alerts from the queue."""
-        alerts = []
-        count = 0
-        while not self.alert_queue.empty() and count < max_alerts:
-            alerts.append(self.alert_queue.get())
-            count += 1
-        return alerts
+        """Get recent alerts from the saved events list."""
+        # Return the most recent alerts without removing them
+        return self.saved_events[-max_alerts:] if len(self.saved_events) > max_alerts else self.saved_events.copy()
     
     def get_all_alerts(self) -> List[Dict[str, Any]]:
-        """Get all alerts from the queue."""
-        alerts = []
-        while not self.alert_queue.empty():
-            alerts.append(self.alert_queue.get())
-        return alerts
+        """Get all alerts from the saved events list."""
+        # Return a copy of all saved events so they persist
+        return self.saved_events.copy()
     
     def get_system_status(self) -> Dict[str, Any]:
         """Get overall system status."""

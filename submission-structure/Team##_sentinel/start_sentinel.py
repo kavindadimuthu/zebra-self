@@ -68,7 +68,12 @@ def start_detection_engine():
         from detection_engine import DetectionEngine
         
         engine = DetectionEngine()
-        engine.initialize(data_dir="../data/input")
+        
+        # Calculate absolute path to data directory
+        script_dir = Path(__file__).parent
+        data_dir = script_dir.parent.parent / "data" / "input"
+        
+        engine.initialize(data_dir=str(data_dir))
         
         # Start the engine in a separate thread
         engine_thread = threading.Thread(target=engine.start, daemon=True)
